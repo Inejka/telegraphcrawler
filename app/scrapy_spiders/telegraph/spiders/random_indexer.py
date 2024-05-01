@@ -1,5 +1,5 @@
 from datetime import datetime
-from typing import Any, Generator
+from typing import Any
 
 import scrapy
 import scrapy.http
@@ -27,7 +27,7 @@ class RandomIndexer(scrapy.Spider):
 
         self.hashed_pages = set()
 
-    def start_requests(self) -> Generator[scrapy.Request]:
+    def start_requests(self):  # noqa: ANN201
         if hasattr(self, "words"):
             for word in self.words.split(" "):
                 for day_of_year in range(1, RandomIndexer.max_days + 1):
@@ -52,14 +52,14 @@ class RandomIndexer(scrapy.Spider):
                         yield rq
             return
 
-    def generate_next_urls(self, base_url:str) -> Generator[str]:
+    def generate_next_urls(self, base_url:str):  # noqa: ANN201
         index_of_separator = base_url.rfind("-")
         start_num = int(base_url[index_of_separator + 1 :])
         base_url = base_url[: index_of_separator + 1]
         for i in range(1, self.max_date_depth + 1):
             yield (base_url + str(start_num + i)), (start_num + i)
 
-    def parse(self, response:scrapy.http.response) -> Generator:
+    def parse(self, response:scrapy.http.response):  # noqa: ANN201
         page_content = response.xpath('//*[@id="_tl_editor"]').get()
         hash_of_a_page = hash(page_content)
         if hash_of_a_page not in self.hashed_pages:
