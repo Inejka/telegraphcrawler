@@ -1,0 +1,13 @@
+[tool.ruff]
+
+lint.extend-select = ["C4", "SIM", "TCH", "W", "I", "UP", "S", "B", "ISC", "ICN", "G", "PT", "Q", "RET", "TID", "RUF", "ANN"]
+#"ANN" , "T20" - for release , -ARG? , ERA - for relese, PTH - but i'm lazy
+
+# Ignore the following linter problems:
+# * ANN101 Missing type annotation for self in method -> I won't annotate self
+# * ANN401 Dynamically typed expressions (typing.Any) are disallowed in `*args|**krawgs` -> I need it in wrapper
+lint.ignore = ["ANN101", "ANN401"]
+
+show-fixes = true
+line-length = 120
+exclude = ["**/middlewares.py","**/pipelines.py"]

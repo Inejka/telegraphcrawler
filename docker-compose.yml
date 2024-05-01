@@ -1,0 +1,36 @@
+version: '3.9'
+
+services:
+  sql:
+    container_name: db
+    image: postgres:16.2-alpine
+    restart: always
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    volumes:
+      - "${MOUNT_SQL}:/var/lib/postgresql/data"
+
+    ports:
+      - "${POSTGRES_PORT}:5432"
+    networks:
+      - app-network
+
+  crawler:
+    container_name: crawler
+    image: inejka/telegraphcrawler:latest
+    networks:
+      - app-network
+    depends_on:
+      - sql
+    environment:
+      - DATABASE_HOST=sql
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - POSTGRES_PORT=${POSTGRES_PORT}
+    volumes:
+      - "${MOUNT_WORK}:/work"
+
+networks:
+  app-network:
+    driver: bridge

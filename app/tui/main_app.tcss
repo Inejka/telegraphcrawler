@@ -1,0 +1,10 @@
+MainApp>Screen {
+    align: center middle;
+}
+
+#main_option_list {
+    width: 70%;
+    height: 80%;
+    width: 1fr;
+    border: solid green;
+}
