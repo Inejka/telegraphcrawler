@@ -5,6 +5,7 @@
 
 # useful for handling different item types with a single interface
 from scrapy import signals
+from scrapy.spidermiddlewares.httperror import HttpErrorMiddleware, HttpError
 
 
 class TelegraphSpiderMiddleware:
@@ -99,3 +100,17 @@ class TelegraphDownloaderMiddleware:
 
     def spider_opened(self, spider):
         spider.logger.info("Spider opened: %s" % spider.name)
+
+
+
+class MyHttpErrorMiddleware(HttpErrorMiddleware):
+    def __init__(self, settings):
+        super().__init__(settings)
+
+    def process_spider_exception(self, response, exception, spider):
+        if isinstance(exception, HttpError):
+            spider.crawler.stats.inc_value("httperror/response_ignored_count")
+            spider.crawler.stats.inc_value(
+                f"httperror/response_ignored_status_count/{response.status}"
+            )
+            return []

@@ -15,6 +15,12 @@ class RandomIndexer(scrapy.Spider):
     media_base_url = "https://telegra.ph"
     year = "2024"
     max_days = 366
+    custom_settings = {  # noqa: RUF012
+        "SPIDER_MIDDLEWARES": {
+            "scrapy.spidermiddlewares.httperror.HttpErrorMiddleware": None,
+            "telegraph.middlewares.MyHttpErrorMiddleware": 50,
+        },
+    }
 
     def __init__(self, *args: Any, **kwargs : Any) -> None:
         super().__init__(*args, **kwargs)

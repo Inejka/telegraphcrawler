@@ -6,7 +6,7 @@ from threading import Thread
 
 
 def work(sample:str, log_folder: str) -> None:
-    command = f'scrapy crawl random_indexer -a max_date_depth=10 -a words="{sample}" --logfile {log_folder+"/"+sample + ".log"} -L WARNING'
+    command = f'scrapy crawl random_indexer -a max_date_depth=10 -a words="{sample}" -L INFO --logfile "{log_folder+"/"+sample.strip()}.log"'
     my_tool_subprocess = subprocess.Popen(command, shell=True, cwd="/app/scrapy_spiders")  # noqa: S602
     my_tool_subprocess.wait()
 
