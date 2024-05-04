@@ -122,17 +122,7 @@ def get_engine() -> Engine:
     try:
         engine = create_engine(connection_str)
         engine.connect()
-        Base.metadata.create_all(engine)
         return engine
     except Exception as e:
         raise(e)
-
-
-if __name__ == "__main__":
-    from sqlalchemy import select
-
-    session = Session(engine)
-    stmt = select(Images).where()
-
-    for user in session.scalars(stmt):
-        print(user.img_url)
+    
