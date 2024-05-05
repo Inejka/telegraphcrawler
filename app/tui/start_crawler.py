@@ -16,6 +16,7 @@ from utils import (
     PATH_DICT,
     WORDLISTS_IS_EMPTY,
     WORDLISTS_IS_NOT_FOUND,
+    get_init_config,
 )
 
 
@@ -53,13 +54,18 @@ class CrawlerStarter(Screen):
     BUTTON_CANCEL_ID = "cancel"
 
     def compose(self) -> ComposeResult:
+        configs = get_init_config()
         self.variants = Select([("", "")])
         yield self.variants
         yield Label("Cores to use")
-        self.cores_to_use = Input(placeholder="Cores to use", type="integer", restrict=r"^[1-9]\d*$", value="4")
+        self.cores_to_use = Input(
+            placeholder="Cores to use", type="integer", restrict=r"^[1-9]\d*$", value=str(configs["cores_to_use"])
+        )
         yield self.cores_to_use
         yield Label("Indexing depth")
-        self.indexing_depth = Input(placeholder="Indexing depth", type="integer", restrict=r"^[1-9]\d*$", value="10")
+        self.indexing_depth = Input(
+            placeholder="Indexing depth", type="integer", restrict=r"^[1-9]\d*$", value=str(configs["indexing_depth"])
+        )
         yield self.indexing_depth
         yield Label("Log Level")
         with Horizontal():
@@ -71,12 +77,14 @@ class CrawlerStarter(Screen):
                     ("Info", "INFO"),
                     ("Debug", "DEBUG"),
                 ],
-                value="INFO",
+                value=str(configs["log_level_select"]),
                 allow_blank=False,
-                id = "with_border_1"
+                id="with_border_1",
             )
             yield self.log_level_select
-            self.ignore_http_errors_in_log = CustomCheckbox("Do not spam non 200 http codes in log", True, id= "with_border_2")
+            self.ignore_http_errors_in_log = CustomCheckbox(
+                "Do not spam non 200 http codes in log", configs["ignore_http_errors_in_log"], id="with_border_2"
+            )
             yield self.ignore_http_errors_in_log
         with Horizontal(classes="buttons_container"):
             yield Button("Start", id=CrawlerStarter.BUTTON_START_ID, classes="crawl_button")
@@ -93,7 +101,7 @@ class CrawlerStarter(Screen):
             self.app.push_screen(ErrorScreen(text=WORDLISTS_IS_NOT_FOUND))
         self.variants.clear()
         self.variants.set_options((wordlists[i], wordlists[i]) for i in range(len(wordlists)))
-        self.variants.value=wordlists[0]
+        self.variants.value = wordlists[0]
 
     def is_dict_folder_alive(self) -> bool:
         return os.path.exists(PATH_DICT)
