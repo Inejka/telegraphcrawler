@@ -33,3 +33,13 @@ CrawlerStarter>Input{
     width: 1fr;
     border: solid green;
 }
+
+#with_border_1{
+    width: 1fr;
+    border: solid green;
+}
+
+#with_border_2{
+    width: 1fr;
+    border: solid green;
+}

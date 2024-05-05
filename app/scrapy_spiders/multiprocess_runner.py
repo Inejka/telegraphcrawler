@@ -9,7 +9,6 @@ def work(sample:str, log_folder: str, index_depth:int, log_level:str, ignore_htt
     command = f'scrapy crawl random_indexer -a max_date_depth={index_depth} -a words="{sample}" -L {log_level} --logfile "{log_folder+"/"+sample.strip()}.log"'
     if ignore_http_errors_in_log:
         command += " -a ignore_errors=True"
-        # command += " -s SPIDER_MIDDLEWARES='telegraph.middlewares.MyHttpErrorMiddleware:50'"
     my_tool_subprocess = subprocess.Popen(command, shell=True, cwd="/app/scrapy_spiders")  # noqa: S602
     my_tool_subprocess.wait()
 
