@@ -3,7 +3,7 @@ import os
 from enum import Enum
 
 from sqlalchemy import TIMESTAMP, Column, Engine, String, Text, create_engine
-from sqlalchemy.orm import DeclarativeBase, Mapped, Session, mapped_column
+from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
 
 
 class Base(DeclarativeBase):
@@ -125,4 +125,3 @@ def get_engine() -> Engine:
         return engine
     except Exception as e:
         raise(e)
-    

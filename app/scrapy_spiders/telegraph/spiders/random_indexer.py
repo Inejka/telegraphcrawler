@@ -1,3 +1,4 @@
+import sys
 from datetime import datetime
 from typing import Any
 
@@ -15,14 +16,17 @@ class RandomIndexer(scrapy.Spider):
     media_base_url = "https://telegra.ph"
     year = "2024"
     max_days = 366
-    custom_settings = {  # noqa: RUF012
-        "SPIDER_MIDDLEWARES": {
-            "scrapy.spidermiddlewares.httperror.HttpErrorMiddleware": None,
-            "telegraph.middlewares.MyHttpErrorMiddleware": 50,
-        },
-    }
 
-    def __init__(self, *args: Any, **kwargs : Any) -> None:
+    for x in sys.argv:
+        if "ignore_errors=" in x:
+            custom_settings = {
+                "SPIDER_MIDDLEWARES": {
+                    "scrapy.spidermiddlewares.httperror.HttpErrorMiddleware": None,
+                    "telegraph.middlewares.MyHttpErrorMiddleware": 50,
+                },
+            }
+
+    def __init__(self, *args: Any, **kwargs: Any) -> None:
         super().__init__(*args, **kwargs)
         self.session = temp_d.Session(temp_d.get_engine())
         self.link_extractor = LinkExtractor()
@@ -30,21 +34,14 @@ class RandomIndexer(scrapy.Spider):
             self.max_date_depth = 5
         else:
             self.max_date_depth = int(self.max_date_depth)
-
         self.hashed_pages = set()
 
     def start_requests(self):  # noqa: ANN201
         if hasattr(self, "words"):
             for word in self.words.split(" "):
                 for day_of_year in range(1, RandomIndexer.max_days + 1):
-                    url_creation_date = datetime.strptime(
-                        RandomIndexer.year + "-" + str(day_of_year), "%Y-%j"
-                    )
-                    url = (
-                        RandomIndexer.base_url
-                        + word
-                        + url_creation_date.strftime("-%m-%d")
-                    )
+                    url_creation_date = datetime.strptime(RandomIndexer.year + "-" + str(day_of_year), "%Y-%j")
+                    url = RandomIndexer.base_url + word + url_creation_date.strftime("-%m-%d")
                     rq = scrapy.Request(url=url, callback=self.parse)
                     rq.counter = 0
                     rq.url_creation_date = url_creation_date
@@ -58,14 +55,14 @@ class RandomIndexer(scrapy.Spider):
                         yield rq
             return
 
-    def generate_next_urls(self, base_url:str):  # noqa: ANN201
+    def generate_next_urls(self, base_url: str):  # noqa: ANN201
         index_of_separator = base_url.rfind("-")
         start_num = int(base_url[index_of_separator + 1 :])
         base_url = base_url[: index_of_separator + 1]
         for i in range(1, self.max_date_depth + 1):
             yield (base_url + str(start_num + i)), (start_num + i)
 
-    def parse(self, response:scrapy.http.response):  # noqa: ANN201
+    def parse(self, response: scrapy.http.response):  # noqa: ANN201
         page_content = response.xpath('//*[@id="_tl_editor"]').get()
         hash_of_a_page = hash(page_content)
         if hash_of_a_page not in self.hashed_pages:
@@ -75,24 +72,16 @@ class RandomIndexer(scrapy.Spider):
                 {
                     "url": response.url,
                     "keywords": response.request.keywords,
-                    "title": response.xpath(
-                        "/html/body/div[1]/div[1]/main/header/h1/text()"
-                    ).get(),
+                    "title": response.xpath("/html/body/div[1]/div[1]/main/header/h1/text()").get(),
                     "creation_date": datetime.strptime(
-                        response.xpath(
-                            "/html/body/div[1]/div[1]/main/header/address/time/@datetime"
-                        ).get(),
+                        response.xpath("/html/body/div[1]/div[1]/main/header/address/time/@datetime").get(),
                         "%Y-%m-%dT%H:%M:%S%z",
                     ),
                     "counter": response.request.counter,
                     "day_of_year": response.request.url_creation_date,
                     "plain_html": response.text,
-                    "author": response.xpath(
-                        "/html/body/div[1]/div[1]/main/header/address/a/text()"
-                    ).get(),
-                    "crosslinks_count": len(
-                        self.link_extractor.extract_links(response)
-                    ),
+                    "author": response.xpath("/html/body/div[1]/div[1]/main/header/address/a/text()").get(),
+                    "crosslinks_count": len(self.link_extractor.extract_links(response)),
                     "images_count": len(response.css("img")),
                     "video_count": len(response.css("video")),
                     "content_len": len(page_content),

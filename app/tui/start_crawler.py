@@ -2,13 +2,29 @@ import glob
 import os
 from typing import ClassVar
 
+from rich.text import Text
 from scrapy_spiders.multiprocess_runner import SpiderRunner
 from textual import on
 from textual.app import ComposeResult
 from textual.containers import Horizontal
 from textual.screen import Screen
-from textual.widgets import Button, Select, Static
-from utils import DICT_FOLDER_IS_NOT_FOUND, PATH_DICT, WORDLISTS_IS_NOT_FOUND
+from textual.widgets import Button, Checkbox, Footer, Input, Label, Select, Static
+from utils import (
+    CORES_ARE_EMPTY,
+    DICT_FOLDER_IS_NOT_FOUND,
+    INDEX_DEPTH_IS_EMPTY,
+    PATH_DICT,
+    WORDLISTS_IS_EMPTY,
+    WORDLISTS_IS_NOT_FOUND,
+)
+
+
+class CustomCheckbox(Checkbox):
+    def render(self) -> Text:
+        temp = super().render()
+        temp_str = temp.plain
+        temp.plain = temp_str.replace("X", "T") if self.value else temp_str.replace("X", "F")
+        return temp
 
 
 class ErrorScreen(Screen):
@@ -32,16 +48,39 @@ class ErrorScreen(Screen):
 
 class CrawlerStarter(Screen):
     CSS_PATH = "crawler_starter.tcss"
-    BINDINGS: ClassVar[list] = [("escape", "app.pop_screen", "Pop screen")]
+    BINDINGS: ClassVar[list] = [("escape", "app.pop_screen", "Pop screen"), ("S", "start_crawler", "Start crawler")]
     BUTTON_START_ID = "start"
     BUTTON_CANCEL_ID = "cancel"
 
     def compose(self) -> ComposeResult:
         self.variants = Select([("", "")])
         yield self.variants
+        yield Label("Cores to use")
+        self.cores_to_use = Input(placeholder="Cores to use", type="integer", restrict=r"^[1-9]\d*$", value="4")
+        yield self.cores_to_use
+        yield Label("Indexing depth")
+        self.indexing_depth = Input(placeholder="Indexing depth", type="integer", restrict=r"^[1-9]\d*$", value="10")
+        yield self.indexing_depth
+        yield Label("Log Level")
+        with Horizontal():
+            self.log_level_select = Select(
+                [
+                    ("Critical", "CRITICAL"),
+                    ("Error", "ERROR"),
+                    ("Warning", "WARNING"),
+                    ("Info", "INFO"),
+                    ("Debug", "DEBUG"),
+                ],
+                value="INFO",
+                allow_blank=False,
+            )
+            yield self.log_level_select
+            self.ignore_http_errors_in_log = CustomCheckbox("Do not spam non 200 http codes in log", True)
+            yield self.ignore_http_errors_in_log
         with Horizontal(classes="buttons_container"):
             yield Button("Start", id=CrawlerStarter.BUTTON_START_ID, classes="crawl_button")
             yield Button("Cancel", id=CrawlerStarter.BUTTON_CANCEL_ID, classes="crawl_button")
+        yield Footer()
 
     def on_mount(self) -> None:
         if not self.is_dict_folder_alive():
@@ -65,8 +104,23 @@ class CrawlerStarter(Screen):
         if pressed.button.id == CrawlerStarter.BUTTON_CANCEL_ID:
             self.app.pop_screen()
         if pressed.button.id == CrawlerStarter.BUTTON_START_ID:
-            if self.variants.is_blank():
-                pass
-            else:
-                self.app.pop_screen()
-                SpiderRunner(self.variants.value).start()
+            self.action_start_crawler()
+
+    def action_start_crawler(self) -> None:
+        if self.variants.is_blank():
+            self.app.push_screen(ErrorScreen(text=WORDLISTS_IS_EMPTY))
+            return
+        if not self.cores_to_use.is_valid:
+            self.app.push_screen(ErrorScreen(text=CORES_ARE_EMPTY))
+            return
+        if not self.indexing_depth.is_valid:
+            self.app.push_screen(ErrorScreen(text=INDEX_DEPTH_IS_EMPTY))
+            return
+        self.app.pop_screen()
+        SpiderRunner(
+            self.variants.value,
+            int(self.cores_to_use.value),
+            int(self.indexing_depth.value),
+            self.log_level_select.value,
+            self.ignore_http_errors_in_log.value,
+        ).start()
