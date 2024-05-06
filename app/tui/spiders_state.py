@@ -70,15 +70,15 @@ class SpiderItem(Widget):
     ) -> None:
         super().__init__(*children, name=name, id=id, classes=classes, disabled=disabled)
         self.working_dict = working_dict
+        self.progress_bar = ProgressBar()
+        self.done_work = Label("0", id="done_work")
+        self.total_work = Label("", id="total_work")
 
     def compose(self) -> ComposeResult:
         yield Label(self.working_dict, id="file")
-        self.progress_bar = ProgressBar()
         yield Label("Done: ")
-        self.done_work = Label("0", id="done_work")
         yield self.done_work
         yield Label("Total: ")
-        self.total_work = Label("", id="total_work")
         yield self.total_work
         yield self.progress_bar
 
