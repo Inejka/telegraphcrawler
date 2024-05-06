@@ -20,7 +20,7 @@ mv ./.env_example ./.env
 ```
 mkdir work
 mkdir work/dict
-echo cat > work/dict/first.txt 
+echo -e "cat\nkitty\ndog\nduck\nrabbit\nchicken\nguinea-pig\ndonkey\npigeon\ngoose\nllama\nalpaca\ngoldfish\nparrot" > work/dict/first.txt 
 ```
 - Run with docker-compose and enter TUI:
 ```
