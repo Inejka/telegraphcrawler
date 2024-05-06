@@ -2,8 +2,9 @@ from typing import ClassVar
 
 from textual import on
 from textual.app import App, ComposeResult
-from textual.widgets import Footer, Header, OptionList
+from textual.widgets import Footer, Header, Label, OptionList
 from textual.widgets.option_list import Option
+from tui.spiders_state import SpiderState
 from tui.start_crawler import CrawlerStarter
 
 
@@ -15,10 +16,12 @@ class MainApp(App[None]):
 
     def compose(self) -> ComposeResult:
         yield Header()
+        yield Label("Options")
         self.options_list = OptionList(
             Option("Start crawler", id = "CrawlerStarter"), id = "main_option_list"
         )
         yield self.options_list
+        yield SpiderState(id="SpiderState")
         yield Footer()
 
     @on(OptionList.OptionSelected)

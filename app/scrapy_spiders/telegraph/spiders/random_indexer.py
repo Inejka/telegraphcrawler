@@ -8,6 +8,7 @@ import scrapy.http.response
 import temp_d
 from scrapy.linkextractors import LinkExtractor
 from sqlalchemy.dialects.postgresql import insert
+from sqlalchemy.orm import Session
 
 
 class RandomIndexer(scrapy.Spider):
@@ -28,7 +29,7 @@ class RandomIndexer(scrapy.Spider):
 
     def __init__(self, *args: Any, **kwargs: Any) -> None:
         super().__init__(*args, **kwargs)
-        self.session = temp_d.Session(temp_d.get_engine())
+        self.session = Session(temp_d.get_engine())
         self.link_extractor = LinkExtractor()
         if not hasattr(self, "max_date_depth"):
             self.max_date_depth = 5

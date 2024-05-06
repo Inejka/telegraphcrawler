@@ -9,6 +9,7 @@ from textual.app import ComposeResult
 from textual.containers import Horizontal
 from textual.screen import Screen
 from textual.widgets import Button, Checkbox, Footer, Input, Label, Select, Static
+from tui.spiders_state import SpiderItem
 from utils import (
     CORES_ARE_EMPTY,
     DICT_FOLDER_IS_NOT_FOUND,
@@ -127,10 +128,15 @@ class CrawlerStarter(Screen):
             self.app.push_screen(ErrorScreen(text=INDEX_DEPTH_IS_EMPTY))
             return
         self.app.pop_screen()
-        SpiderRunner(
+        spider_item = SpiderItem(self.variants.value)
+        self.app.query_one("#spider_state_vertical_scroll").mount(spider_item)
+        spider_runner = SpiderRunner(
             self.variants.value,
             int(self.cores_to_use.value),
             int(self.indexing_depth.value),
             self.log_level_select.value,
             self.ignore_http_errors_in_log.value,
-        ).start()
+        )
+        spider_runner.total_work.add_callback(spider_item.set_total_work)
+        spider_runner.current_work.add_callback(spider_item.set_done_work)
+        spider_runner.start()
