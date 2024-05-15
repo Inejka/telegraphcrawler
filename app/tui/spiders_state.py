@@ -44,18 +44,19 @@ class SpiderItem(Widget):
     }
     #file{
         margin-left: 2;
-        width: 80;
+        width: 30%;
     }
     #total_work{
         margin-left: 2;
-        width: 5;
+        width: 5%;
     }
     #done_work{
         margin-left: 2;
-        width: 5;
+        width: 5%;
     }
     SpiderItem>ProgressBar{
         margin-left: 2;
+        width: 50%
     }
     """
 
