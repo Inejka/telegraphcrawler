@@ -100,6 +100,7 @@ class CrawlerStarter(Screen):
         if len(wordlists) == 0:
             self.app.pop_screen()
             self.app.push_screen(ErrorScreen(text=WORDLISTS_IS_NOT_FOUND))
+            return
         self.variants.clear()
         self.variants.set_options((wordlists[i], wordlists[i]) for i in range(len(wordlists)))
         self.variants.value = wordlists[0]
