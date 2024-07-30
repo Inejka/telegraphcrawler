@@ -6,7 +6,7 @@ from rich.text import Text
 from scrapy_spiders.multiprocess_runner import SpiderRunner
 from textual import on
 from textual.app import ComposeResult
-from textual.containers import Horizontal
+from textual.containers import Container, Horizontal
 from textual.screen import Screen
 from textual.widgets import Button, Checkbox, Footer, Input, Label, Select, Static
 from tui.spiders_state import SpiderItem
@@ -25,7 +25,7 @@ class CustomCheckbox(Checkbox):
     def render(self) -> Text:
         temp = super().render()
         temp_str = temp.plain
-        temp.plain = temp_str.replace("X", "T") if self.value else temp_str.replace("X", "F")
+        temp.plain = temp_str.replace("X", "True") if self.value else temp_str.replace("X", "False")
         return temp
 
 
@@ -55,21 +55,22 @@ class CrawlerStarter(Screen):
     BUTTON_CANCEL_ID = "cancel"
 
     def compose(self) -> ComposeResult:
-        configs = get_init_config()
-        self.variants = Select([("", "")])
-        yield self.variants
-        yield Label("Cores to use")
-        self.cores_to_use = Input(
-            placeholder="Cores to use", type="integer", restrict=r"^[1-9]\d*$", value=str(configs["cores_to_use"])
-        )
-        yield self.cores_to_use
-        yield Label("Indexing depth")
-        self.indexing_depth = Input(
-            placeholder="Indexing depth", type="integer", restrict=r"^[1-9]\d*$", value=str(configs["indexing_depth"])
-        )
-        yield self.indexing_depth
-        yield Label("Log Level")
-        with Horizontal():
+        with Container(id="crawler-starter-container"):
+            configs = get_init_config()
+            yield Label("Select dictionary to use")
+            self.variants = Select([("", "")])
+            yield self.variants
+            yield Label("Cores to use")
+            self.cores_to_use = Input(
+                placeholder="Cores to use", type="integer", restrict=r"^[1-9]\d*$", value=str(configs["cores_to_use"])
+            )
+            yield self.cores_to_use
+            yield Label("Indexing depth")
+            self.indexing_depth = Input(
+                placeholder="Indexing depth", type="integer", restrict=r"^[1-9]\d*$", value=str(configs["indexing_depth"])
+            )
+            yield self.indexing_depth
+            yield Label("Log Level")
             self.log_level_select = Select(
                 [
                     ("Critical", "CRITICAL"),
@@ -83,13 +84,14 @@ class CrawlerStarter(Screen):
                 id="with_border_1",
             )
             yield self.log_level_select
+            yield Label("Do not spam non 200 http codes in log")
             self.ignore_http_errors_in_log = CustomCheckbox(
-                "Do not spam non 200 http codes in log", configs["ignore_http_errors_in_log"], id="with_border_2"
+                "",configs["ignore_http_errors_in_log"], id="with_border_2"
             )
             yield self.ignore_http_errors_in_log
-        with Horizontal(classes="buttons_container"):
-            yield Button("Start", id=CrawlerStarter.BUTTON_START_ID, classes="crawl_button")
-            yield Button("Cancel", id=CrawlerStarter.BUTTON_CANCEL_ID, classes="crawl_button")
+            with Horizontal(classes="buttons_container"):
+                yield Button("Start", id=CrawlerStarter.BUTTON_START_ID, classes="crawl_button")
+                yield Button("Cancel", id=CrawlerStarter.BUTTON_CANCEL_ID, classes="crawl_button")
         yield Footer()
 
     def on_mount(self) -> None:

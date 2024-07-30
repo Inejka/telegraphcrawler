@@ -1,29 +1,39 @@
 CrawlerStarter {
-    align: center middle;
     background: rgb(34,34,34);
-    color: white;
 }
 
-CrawlerStarter>Static {
-    width: 70;
-}
-
-CrawlerStarter>Select{
-    width: 70;
-    margin-bottom: 1;
-    margin-top: 4;
-    width: 1fr;
+#crawler-starter-container{
+    height: 100%;
+    layout: grid;
+    grid-size: 2;
+    background: $panel;
     border: solid green;
-    min-height: 10%;
+    width: 50%;
+    # when adding new widget make sure to add new 1fr   
+    grid-rows: 2fr 1fr 1fr 2fr 1fr 4fr;
+}
+
+#crawler-starter-container>Label{
+    align: center middle;
+    text-align: end;
+    # border here to make text align normally, idk wtf is going on, it just works
+    border: rgb(34,34,34);
+    width: 100%;
+}
+
+#crawler-starter-container>Select{
+    border: solid green;
     background: black;
 }
 .buttons_container{
-    align: center middle;   
+    column-span: 2;
+    align: center bottom;
 }
 
-CrawlerStarter>Input{
+#crawler-starter-container>Input{
     width: 1fr;
     border: solid green;
+    background: black;
 }
 
 .crawl_button{
@@ -42,4 +52,9 @@ CrawlerStarter>Input{
 #with_border_2{
     width: 1fr;
     border: solid green;
+}
+
+#crawler-starter-container>CustomCheckbox{
+    border: solid green;
+    background: black;
 }
