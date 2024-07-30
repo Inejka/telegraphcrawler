@@ -10,7 +10,7 @@ CrawlerStarter {
     border: solid green;
     width: 50%;
     # when adding new widget make sure to add new 1fr   
-    grid-rows: 2fr 1fr 1fr 2fr 1fr 4fr;
+    grid-rows: 2fr 1fr 1fr 2fr 1fr 1fr 4fr;
 }
 
 #crawler-starter-container>Label{
@@ -50,6 +50,11 @@ CrawlerStarter {
 }
 
 #with_border_2{
+    width: 1fr;
+    border: solid green;
+}
+
+#with_border_3{
     width: 1fr;
     border: solid green;
 }

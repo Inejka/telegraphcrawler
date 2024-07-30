@@ -14,6 +14,7 @@ CONFIG_TEMPLATE = {
     "indexing_depth": 10,
     "log_level_select": "INFO",
     "ignore_http_errors_in_log": True,
+    "ignore_bots_content" : True
 }
 
 

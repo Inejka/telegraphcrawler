@@ -67,7 +67,10 @@ class CrawlerStarter(Screen):
             yield self.cores_to_use
             yield Label("Indexing depth")
             self.indexing_depth = Input(
-                placeholder="Indexing depth", type="integer", restrict=r"^[1-9]\d*$", value=str(configs["indexing_depth"])
+                placeholder="Indexing depth",
+                type="integer",
+                restrict=r"^[1-9]\d*$",
+                value=str(configs["indexing_depth"]),
             )
             yield self.indexing_depth
             yield Label("Log Level")
@@ -86,9 +89,12 @@ class CrawlerStarter(Screen):
             yield self.log_level_select
             yield Label("Do not spam non 200 http codes in log")
             self.ignore_http_errors_in_log = CustomCheckbox(
-                "",configs["ignore_http_errors_in_log"], id="with_border_2"
+                "", configs["ignore_http_errors_in_log"], id="with_border_2"
             )
             yield self.ignore_http_errors_in_log
+            yield Label("Ignore pages with 'bot' in author")
+            self.ignore_bots_content = CustomCheckbox("", configs["ignore_bots_content"], id="with_border_3")
+            yield self.ignore_bots_content
             with Horizontal(classes="buttons_container"):
                 yield Button("Start", id=CrawlerStarter.BUTTON_START_ID, classes="crawl_button")
                 yield Button("Cancel", id=CrawlerStarter.BUTTON_CANCEL_ID, classes="crawl_button")
@@ -139,6 +145,7 @@ class CrawlerStarter(Screen):
             int(self.indexing_depth.value),
             self.log_level_select.value,
             self.ignore_http_errors_in_log.value,
+            self.ignore_bots_content.value,
         )
         spider_runner.total_work.add_callback(spider_item.set_total_work)
         spider_runner.current_work.add_callback(spider_item.set_done_work)

@@ -35,10 +35,20 @@ class SafeCounter:
                 func(self.__counter)
 
 
-def work(sample: str, log_folder: str, index_depth: int, log_level: str, ignore_http_errors_in_log: bool, done_work_counter: SafeCounter) -> None:
+def work(
+    sample: str,
+    log_folder: str,
+    index_depth: int,
+    log_level: str,
+    ignore_http_errors_in_log: bool,
+    ignore_bots_content: bool,
+    done_work_counter: SafeCounter,
+) -> None:
     command = f'scrapy crawl random_indexer -a max_date_depth={index_depth} -a words="{sample}" -L {log_level} --logfile "{log_folder+"/"+sample.strip()}.log"'
     if ignore_http_errors_in_log:
         command += " -a ignore_errors=True"
+    if ignore_bots_content:
+        command += " -a ignore_bots=True"
     my_tool_subprocess = subprocess.Popen(command, shell=True, cwd="/app/scrapy_spiders")  # noqa: S602
     my_tool_subprocess.wait()
     done_work_counter.inc()
@@ -46,7 +56,13 @@ def work(sample: str, log_folder: str, index_depth: int, log_level: str, ignore_
 
 class SpiderRunner(Thread):
     def __init__(
-        self, wordlist_file: str, cores_to_use: int, index_depth: int, log_level: str, ignore_http_errors_in_log: bool
+        self,
+        wordlist_file: str,
+        cores_to_use: int,
+        index_depth: int,
+        log_level: str,
+        ignore_http_errors_in_log: bool,
+        ignore_bots_content: bool,
     ) -> None:
         super().__init__()
         self.wordlist_file = wordlist_file
@@ -54,6 +70,7 @@ class SpiderRunner(Thread):
         self.index_depth = index_depth
         self.log_level = log_level
         self.ignore_http_errors_in_log = ignore_http_errors_in_log
+        self.ignore_bots_content = ignore_bots_content
         self.total_work = SafeCounter()
         self.current_work = SafeCounter()
 
@@ -74,7 +91,18 @@ class SpiderRunner(Thread):
         os.mkdir(log_folder)
         tp = ThreadPool(self.cores_to_use)
         for word in words:
-            tp.apply_async(work, (word, log_folder, self.index_depth, self.log_level, self.ignore_http_errors_in_log, self.current_work))
+            tp.apply_async(
+                work,
+                (
+                    word,
+                    log_folder,
+                    self.index_depth,
+                    self.log_level,
+                    self.ignore_http_errors_in_log,
+                    self.ignore_bots_content,
+                    self.current_work,
+                ),
+            )
 
         tp.close()
         tp.join()

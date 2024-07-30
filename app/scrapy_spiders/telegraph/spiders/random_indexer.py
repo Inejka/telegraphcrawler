@@ -31,6 +31,11 @@ class RandomIndexer(scrapy.Spider):
         super().__init__(*args, **kwargs)
         self.session = Session(temp_d.get_engine())
         self.link_extractor = LinkExtractor()
+        self.ignore_bots = False
+        for x in sys.argv:
+            if "ignore_bots=" in x:
+                self.ignore_bots = True
+                break
         if not hasattr(self, "max_date_depth"):
             self.max_date_depth = 5
         else:
@@ -66,6 +71,20 @@ class RandomIndexer(scrapy.Spider):
     def parse(self, response: scrapy.http.response):  # noqa: ANN201
         page_content = response.xpath('//*[@id="_tl_editor"]').get()
         hash_of_a_page = hash(page_content)
+
+        for next_url, counter in self.generate_next_urls(response.url):
+            rq = scrapy.Request(url=next_url, callback=self.parse)
+            rq.counter = counter
+            rq.url_creation_date = response.request.url_creation_date
+            rq.keywords = response.request.keywords
+            yield rq
+
+        if (
+            self.ignore_bots
+            and response.xpath("/html/body/div[1]/div[1]/main/header/address/a/text()").get()
+            and "bot" in response.xpath("/html/body/div[1]/div[1]/main/header/address/a/text()").get().lower()
+        ):
+            return
         if hash_of_a_page not in self.hashed_pages:
             self.hashed_pages.add(hash_of_a_page)
 
@@ -117,10 +136,3 @@ class RandomIndexer(scrapy.Spider):
                 self.session.execute(stmt)
 
             self.session.commit()
-
-        for next_url, counter in self.generate_next_urls(response.url):
-            rq = scrapy.Request(url=next_url, callback=self.parse)
-            rq.counter = counter
-            rq.url_creation_date = response.request.url_creation_date
-            rq.keywords = response.request.keywords
-            yield rq
