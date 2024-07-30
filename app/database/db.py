@@ -122,6 +122,7 @@ def get_engine() -> Engine:
     try:
         engine = create_engine(connection_str)
         engine.connect()
+        Base.metadata.create_all(engine)
         return engine
     except Exception as e:
         raise(e)

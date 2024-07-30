@@ -10,7 +10,11 @@ services:
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
     volumes:
       - "${MOUNT_SQL}:/var/lib/postgresql/data"
-
+    healthcheck: 
+      interval: 1s
+      retries: 100
+      test: "pg_isready -U \"$$POSTGRES_USER\" -d \"$$POSTGRES_DB\""
+      timeout: 2s
     ports:
       - "${POSTGRES_PORT}:5432"
     networks:
@@ -22,7 +26,8 @@ services:
     networks:
       - app-network
     depends_on:
-      - sql
+      sql:
+        condition: service_healthy
     environment:
       - DATABASE_HOST=sql
       - POSTGRES_USER=${POSTGRES_USER}
